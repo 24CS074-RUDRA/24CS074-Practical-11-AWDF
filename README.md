@@ -55,16 +55,16 @@ Task data is retained in the named `mongodb_data` volume. Start again with `dock
 docker compose down --volumes
 ```
 
-## Optional JWT secret
+## Set the JWT signing secret
 
-The Compose file includes a local-only fallback so the lab can start with one command. To provide your own secret, copy `.env.example` to `.env`, replace the placeholder, and then run Compose:
+`JWT_SECRET` is the private key the backend uses to sign and verify login tokens. It is not itself a JWT. Generate a strong 64-byte random secret directly into the root `.env` file with Node.js:
 
 ```powershell
-Copy-Item .env.example .env
+node -e "require('node:fs').writeFileSync('.env', 'JWT_SECRET=' + require('node:crypto').randomBytes(64).toString('hex') + '\n', { flag: 'wx' })"
 docker compose up --build
 ```
 
-`.env` is excluded from Git and Docker build contexts. Do not use the fallback secret for a deployed or shared application.
+Run this from the project root. The `wx` flag prevents overwriting an existing `.env`; if the file already exists, keep its secret or remove it only if you intend to generate a replacement. Keep `.env` private: it is excluded from Git and Docker build contexts. Do not share or commit it. Changing the secret invalidates tokens that were signed with the previous value.
 
 ## Useful checks and troubleshooting
 
